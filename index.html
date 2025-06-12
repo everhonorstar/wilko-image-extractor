@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wilko Image & Info Extractor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    #result a {
+      display: block;
+      margin-bottom: 6px;
+      word-break: break-word;
+    }
+    pre {
+      background: #f6f8fa;
+      padding: 10px;
+      white-space: pre-wrap;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h2>🧰 Wilko Image & Info Extractor</h2>
+  <p>Paste a Wilko product page URL below and click the button to extract image links + key product info.</p>
+  <input type="text" id="urlInput" placeholder="https://www.wilko.com/en-uk/...">
+  <button onclick="extract()">Extract Images & Info</button>
+  <div id="result"></div>
+
+  <script>
+    function getProductCode(url) {
+      const match = url.match(/\/p\/(\d{7,})/);
+      return match ? match[1] : null;
+    }
+
+    async function extract() {
+      const url = document.getElementById('urlInput').value.trim();
+      const productCode = getProductCode(url);
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '';
+
+      if (!url || !productCode) {
+        alert('Please enter a valid Wilko product page URL.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/fetch?url=' + encodeURIComponent(url) + '&code=' + productCode);
+        const data = await res.json();
+        if (data.links.length > 0) {
+          const linkHeader = document.createElement('h3');
+          linkHeader.textContent = "🖼️ Image Links:";
+          resultDiv.appendChild(linkHeader);
+
+          data.links.forEach(link => {
+            const a = document.createElement('a');
+            a.href = link;
+            a.textContent = link;
+            a.target = "_blank";
+            resultDiv.appendChild(a);
+          });
+        }
+
+        const infoHeader = document.createElement('h3');
+        infoHeader.textContent = "📄 Product Info:";
+        resultDiv.appendChild(infoHeader);
+
+        const pre = document.createElement('pre');
+        pre.textContent = data.info || 'No additional info found.';
+        resultDiv.appendChild(pre);
+      } catch (e) {
+        resultDiv.innerHTML = "<p>❌ Failed to fetch content.</p>";
+      }
+    }
+  </script>
+</body>
+</html>
