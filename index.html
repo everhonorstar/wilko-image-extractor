@@ -2,8 +2,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Wilko Image Link Extractor (No Proxy)</title>
+  <meta charset="UTF-8" />
+  <title>Wilko Image Link Extractor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
@@ -19,7 +19,7 @@
   </style>
 </head>
 <body>
-  <h2>⭐ Wilko Image Link Extractor (No Proxy)</h2>
+  <h2>⭐ Wilko Image Link Extractor</h2>
   <p>Paste a Wilko product page URL below and click the button to extract image links.</p>
   <input type="text" id="urlInput" placeholder="https://www.wilko.com/en-uk/...">
   <button onclick="extractLinks()">Extract Image Links</button>
@@ -34,13 +34,15 @@
       }
 
       try {
-        const res = await fetch(url);
-        const html = await res.text();
-        const matches = [...html.matchAll(/src\s*=\s*\"(\/assets\/[^\"]+\.jpg)\"/g)];
-        const links = matches.map(m => `https://www.wilko.com${m[1]}`);
-        document.getElementById('resultArea').value = links.length ? links.join("\n") : 'No Wilko image links found.';
+        const res = await fetch('/api/fetch?url=' + encodeURIComponent(url));
+        const data = await res.json();
+        if (data.links && data.links.length) {
+          document.getElementById('resultArea').value = data.links.join("\n");
+        } else {
+          document.getElementById('resultArea').value = 'No Wilko image links found.';
+        }
       } catch (e) {
-        document.getElementById('resultArea').value = '❌ Failed to load page. Browser blocked cross-origin request.';
+        document.getElementById('resultArea').value = '❌ Failed to load page.';
       }
     }
   </script>
