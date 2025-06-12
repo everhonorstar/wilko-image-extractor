@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wilko Image Link Extractor</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    input, textarea, button { width: 100%; padding: 10px; margin-top: 10px; font-size: 16px; }
+    textarea { height: 200px; }
+  </style>
+</head>
+<body>
+  <h2>⭐ Wilko Image Link Extractor</h2>
+  <p>Enter the full Wilko product page URL below:</p>
+  <input id="urlInput" placeholder="https://www.wilko.com/en-uk/..." />
+  <button onclick="extractLinks()">Extract Image Links</button>
+  <textarea id="resultArea" placeholder="Extracted image links will appear here..."></textarea>
+
+  <script>
+    async function extractLinks() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) return alert('Please enter a valid Wilko URL');
+
+      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+      const fullUrl = proxyUrl + url;
+
+      try {
+        const res = await fetch(fullUrl, { headers: { 'Origin': 'https://wilko.com' }});
+        const html = await res.text();
+        const matches = [...html.matchAll(/src\s*=\s*\"(\/assets\/.*?)\"/g)];
+        const links = matches.map(m => `https://www.wilko.com${m[1]}`);
+        document.getElementById('resultArea').value = links.length ? links.join("\n") : 'No /assets/ image links found.';
+      } catch (e) {
+        document.getElementById('resultArea').value = 'Failed to fetch or parse content. Possible CORS or network issue.';
+      }
+    }
+  </script>
+</body>
+</html>
